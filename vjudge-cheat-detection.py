@@ -5,6 +5,7 @@ import os
 import bs4
 import pdfkit
 import shutil
+import json
 
 
 parser = argparse.ArgumentParser(description='Detect cheat in vjudge contest.')
@@ -28,7 +29,7 @@ def unzip_file(zip_file_name, unzip_dir):
 def get_contest_title(contest_id):
     res = requests.get(f"https://vjudge.net/contest/{contest_id}")
     soup = bs4.BeautifulSoup(res.text, 'lxml')
-    return soup.find(property="og:title")['content']
+    return json.loads(soup.find("textarea").text)["title"]
 
 
 def process(file, output_zip=False):
@@ -39,7 +40,7 @@ def process(file, output_zip=False):
     contest_id = os.path.basename(file[:-4])
     contest_title = get_contest_title(contest_id)
 
-    base_dir = contest_title
+    base_dir = os.path.join(os.path.dirname(file), contest_title)
     unzip_dir = os.path.join(base_dir, "submissions")
     if not unzip_file(file, unzip_dir):
         return
@@ -65,7 +66,7 @@ def process(file, output_zip=False):
             pdfkit.from_file(html_file_list, os.path.join(base_dir, f"{contest_title} {dir_lan}.pdf"))
     
     if output_zip:
-        shutil.make_archive(contest_title, 'zip', base_dir)
+        shutil.make_archive(base_dir, 'zip', base_dir)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+ <TITLE>11882221_team510_J.cpp</TITLE>
+<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <script type="text/javascript">
+  <!--
+   function ZweiFrames(URL1,F1,URL2,F2)
+   {
+    parent.frames[F1].location.href=URL1;
+    parent.frames[F2].location.href=URL2;
+   }
+  //-->
+  </script>
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<HR>
+<H3><CENTER>11882221_team510_J.cpp</CENTER></H3><HR>
+<PRE>
+#include&lt;bits/stdc++.h&gt;
+using namespace std;
+const int N = 105;
+int n1a[N], n1b[N], n2a[N], n2b[N];
+int x;
+int n, m;
+int ans1[N*N][2], ans2[N*N][2];
+const int INF = 1e9;
+struct edge{
+    int to, cap, rev, ki;
+};
+vector&lt;edge&gt; G[5*N];
+int level[5*N];
+int iter[5*N];
+
+void add_edge(int from, int to, int cap, int ki){
+    G[from].push_back((edge){to, cap, G[to].size(), ki});
+    G[to].push_back((edge){from, 0, G[from].size()-1, 2});
+}
+void bfs(int s){
+    memset(level, -1, sizeof(level));
+    queue&lt;int&gt; que;
+    level[s] = 0;
+    que.push(s);
+    while(!que.empty()){
+        int v = que.front(); que.pop();
+		for (int i=0; i&lt;G[v].size(); ++i){
+			edge &amp;e = G[v][i];
+			if (e.cap &gt; 0 &amp;&amp; level[e.to] &lt; 0){
+				level[e.to] = level[v] + 1;
+				que.push(e.to);
+			}
+		}
+    }
+}
+int dfs(int v, int t, int f){
+	if (v == t) return f;
+	for (int &amp;i = iter[v]; i&lt;G[v].size(); ++i){
+		edge &amp;e = G[v][i];
+		if(e.cap&gt;0 &amp;&amp; level[v] &lt; level[e.to]){
+			int d = dfs(e.to, t, min(f, e.cap));
+			if (d &gt; 0){
+				e.cap -= d;
+				G[e.to][e.rev].cap += d;
+				return d;
+			}
+		}
+	}
+	return 0;
+} 
+int max_flow(int s, int t){
+	int flow = 0;
+	for (;;){
+		bfs(s);
+		if (level[t]&lt;0) return flow;
+		memset(iter, 0, sizeof(iter));
+		int f;
+		while((f = dfs(s, t, INF)) &gt; 0){
+			flow += f;
+		}
+	}
+}
+int a[N], b[N];
+int main(){
+	freopen(&quot;input.txt&quot;, &quot;r&quot;, stdin);
+	freopen(&quot;output.txt&quot;, &quot;w&quot;, stdout);
+	scanf(&quot;%d%d&quot;, &amp;n, &amp;m);
+	for (int i=0; i&lt;n; ++i){
+		scanf(&quot;%d&quot;, &amp;x);
+		a[i] = x;
+		int s1 = x%10, s2 = x/10%10, s3 = x/100%10;
+		n1b[i] = s1+s2*10+s3*100;
+		s1 = x/1000%10, s2 = x/10000%10, s3 = x/100000%10;
+		n1a[i] = s1+s2*10+s3*100;
+
+	}
+	for (int i=0; i&lt;m; ++i){
+		scanf(&quot;%d&quot;, &amp;x);
+		b[i] = x;
+		int s1 = x%10, s2 = x/10%10, s3 = x/100%10;
+		n2b[i] = s1+s2*10+s3*100;
+		s1 = x/1000%10, s2 = x/10000%10, s3 = x/100000%10;
+		n2a[i] = s1+s2*10+s3*100;
+	}
+//	for (int i=0; i&lt;n; ++i)
+//		printf(&quot;%d %d &quot;, n1a[i], n1b[i]);
+//	printf(&quot;\n&quot;);
+//	for (int i=0; i&lt;m; ++i)
+//		printf(&quot;%d %d &quot;, n2a[i], n2b[i]);
+	int cnt1 = 0, cnt2 = 0;
+	for (int i=0; i&lt;n; ++i){
+		for (int j=0; j&lt;m; ++j){
+			int s1 = n1a[i]/100 + n1a[i]/10%10 + n1a[i]%10,
+			s2 = n2b[j]/100 + n2b[j]/10%10 + n2b[j]%10;
+			if (s1 == s2){
+				ans1[cnt1][0] = i;
+				ans1[cnt1++][1] = j;
+			}
+			s1 = n1b[i]/100 + n1b[i]/10%10 + n1b[i]%10;
+			s2 = n2a[j]/100 + n2a[j]/10%10 + n2a[j]%10;
+			if (s1 == s2){
+				ans2[cnt2][0] = j;
+				ans2[cnt2++][1] = i;
+			}
+		}
+	}
+	
+//	for (int i=0; i&lt;cnt1; ++i)
+<A NAME="0"></A>//		printf(&quot;%d %d\n&quot;, ans1[i][0], ans1[i][1]);
+//	for (int i=0; i&lt;cnt2; ++i)
+//		printf(&quot;%d %d\n&quot;, ans2[i][0], ans2[i][1]);
+<FONT color="#0000ff"><A HREF="javascript:ZweiFrames('match8-1.html#0',3,'match8-top.html#0',1)"><IMG SRC="forward.gif" ALT="other" BORDER="0" ALIGN="right"></A><B>	int S = 0, T = n+m+1;
+	for (int i=1; i&lt;=n; ++i)
+		add_edge(S, i, 1, -1);
+	for (int i=n+1; i&lt;=n+m; ++i)
+		add_edge(i, T, 1, -1);
+//	printf(&quot;a=%d b=%d\n&quot;, cnt1, cnt2);
+	for(int i=0; i&lt;cnt1; ++i){</B></FONT>
+		int u, v;
+		u = ans1[i][0]+1, v = ans1[i][1]+n+1;
+		add_edge(u, v, 1, 0);
+//		printf(&quot;%d %d 0\n&quot;, u, v);
+	}
+	for (int i=0; i&lt;cnt2; ++i){
+		int u, v;
+		u = ans2[i][0]+n+1; v = ans2[i][1]+1;
+		add_edge(v, u, 1, 1);
+//		printf(&quot;%d %d 1\n&quot;, v, u, 1);
+	}
+	int ans = max_flow(S, T);
+	cout &lt;&lt; ans &lt;&lt; endl;
+	for (int i=1; i&lt;=n; ++i){
+		for (int j=0; j&lt;G[i].size(); ++j){
+			edge &amp;e = G[i][j];
+			if (e.to &gt;= n+1 &amp;&amp; e.to &lt;= n+m &amp;&amp; e.ki != 2 &amp;&amp; e.cap == 0){
+				if (e.ki == 0)
+					printf(&quot;AT %d %d\n&quot;, a[i-1], b[e.to-1-n]);
+				else
+					printf(&quot;TA %d %d\n&quot;, b[e.to-1-n], a[i-1]);
+			}
+		}
+	}
+				
+
+	return 0;
+}
+</PRE>
+</BODY>
+</HTML>
