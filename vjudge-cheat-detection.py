@@ -9,6 +9,8 @@ import json
 import subprocess
 import difflib
 import re
+import mosspy
+import glob
 
 
 parser = argparse.ArgumentParser(description='Detect cheat in vjudge contest.')
@@ -19,6 +21,7 @@ parser.add_argument('-z', '--zip', dest='output_zip',
                     action='store_true', help='build zip archive for output')
 parser.add_argument('-u', '--unique', dest='unique_submission', action='store_true',
                     help='retain only one copy of code when meeting similar submissions of a single user')
+parser.add_argument('-m', '--moss', dest='moss_userid', default=None, nargs=1, help='specify moss userid and use moss to detect cheating, regiester one if you don\'t have your own userid')
 
 args = parser.parse_args()
 
@@ -72,7 +75,64 @@ def remove_duplicate(submission_dir):
     return remove_list
 
 
-def process(file, output_zip=False, unique_submission=False):
+def jplag_build(contest_title, base_dir, unzip_dir, result_buffer_dir):
+    language_list = ['c/c++', 'java17', 'python3']
+    buffer_dir_list = ['c++', 'java', 'python']
+    for language, dir_lan in zip(language_list, buffer_dir_list):
+        html_file_list = []
+        for problem in os.listdir(unzip_dir):
+            submission_dir = os.path.join(unzip_dir, problem)
+            buffer_dir = os.path.join(result_buffer_dir, dir_lan, problem)
+
+
+            subprocess.Popen(['java', '-jar', 'jplag.jar', '-l',
+                              language, '-s', submission_dir, '-r', buffer_dir]).wait()
+            
+            if len(list(glob.glob(os.path.join(buffer_dir, "*")))) <= 8:
+                continue
+            html_file = os.path.join(buffer_dir, 'index.html')
+            if os.path.exists(html_file):
+                html_file_list.append(html_file)
+
+        if len(html_file_list) > 0:
+            pdfkit.from_file(html_file_list, os.path.join(
+                base_dir, f"{contest_title} {dir_lan} jplag.pdf"))
+
+
+def moss_build(contest_title, base_dir, unzip_dir, result_buffer_dir, moss_userid):
+    language_list = ['cc', 'java', 'python']
+    buffer_dir_list = ['c++', 'java', 'python']
+    prefix_list = ['cpp', 'java', 'py']
+    for language, dir_lan, prefix in zip(language_list, buffer_dir_list, prefix_list):
+        html_file_list = []
+        for problem in os.listdir(unzip_dir):
+            submission_dir = os.path.join(unzip_dir, problem)
+            buffer_dir = os.path.join(result_buffer_dir, dir_lan, problem)
+            wildcard = os.path.join(submission_dir, f"*.{prefix}")
+
+            if len(list(glob.glob(wildcard))) <= 1:
+                continue
+            m = mosspy.Moss(moss_userid, language)
+            m.addFilesByWildcard(wildcard)
+            url = m.send()
+
+            print("Report Url: " + url)
+            if not url.startswith("http"):
+                continue
+            mosspy.download_report(url, buffer_dir + os.sep, connections=8)
+
+            if len(list(glob.glob(os.path.join(buffer_dir, "*")))) <= 1:
+                continue
+            html_file = os.path.join(buffer_dir, 'index.html')
+            if os.path.exists(html_file):
+                html_file_list.append(html_file)
+
+        if len(html_file_list) > 0:
+            pdfkit.from_file(html_file_list, os.path.join(
+                base_dir, f"{contest_title} {dir_lan} moss.pdf"))
+
+
+def process(file, output_zip=False, unique_submission=False, moss_userid=None):
     if not os.path.exists(file):
         print(f"{file} does not exist.")
         return
@@ -85,41 +145,28 @@ def process(file, output_zip=False, unique_submission=False):
     if not unzip_file(file, unzip_dir):
         return
 
-    result_buffer_dir = os.path.join(base_dir, 'result_buffer')
-    if not os.path.exists(result_buffer_dir):
-        os.makedirs(result_buffer_dir)
-
     if unique_submission:
         all_removed = ["Removed file:"]
         for problem in os.listdir(unzip_dir):
             submission_dir = os.path.join(unzip_dir, problem)
             all_removed.extend(remove_duplicate(submission_dir))
         print('\n'.join(all_removed) + '\n')
-
-    language_list = ['c/c++', 'java17', 'python3']
-    buffer_dir_list = ['c++', 'java', 'python']
-    for language, dir_lan in zip(language_list, buffer_dir_list):
-        html_file_list = []
-        for problem in os.listdir(unzip_dir):
-            submission_dir = os.path.join(unzip_dir, problem)
-            buffer_dir = os.path.join(result_buffer_dir, dir_lan, problem)
-
-
-            subprocess.Popen(['java', '-jar', 'jplag.jar', '-l',
-                              language, '-s', submission_dir, '-r', buffer_dir]).wait()
-
-            html_file = os.path.join(buffer_dir, 'index.html')
-            if os.path.exists(html_file):
-                html_file_list.append(html_file)
-
-        if len(html_file_list) > 0:
-            pdfkit.from_file(html_file_list, os.path.join(
-                base_dir, f"{contest_title} {dir_lan}.pdf"))
+    
+    if moss_userid is not None:
+        result_buffer_dir_moss = os.path.join(base_dir, 'result_buffer_moss')
+        if not os.path.exists(result_buffer_dir_moss):
+            os.makedirs(result_buffer_dir_moss)
+        moss_build(contest_title, base_dir, unzip_dir, result_buffer_dir_moss, moss_userid[0])
+    
+    result_buffer_dir_jplag = os.path.join(base_dir, 'result_buffer_jplag')
+    if not os.path.exists(result_buffer_dir_jplag):
+        os.makedirs(result_buffer_dir_jplag)
+    jplag_build(contest_title, base_dir, unzip_dir, result_buffer_dir_jplag)
 
     if output_zip:
-        shutil.make_archive(base_dir, 'zip', base_dir)
+        shutil.make_archive(f"{base_dir} report", 'zip', base_dir)
 
 
 if __name__ == '__main__':
     for file in args.files:
-        process(file, args.output_zip, args.unique_submission)
+        process(file, args.output_zip, args.unique_submission, args.moss_userid)
