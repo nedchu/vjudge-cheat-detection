@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?><jplag_infos>
-<infos 
- title = "" source = "" n_of_programs = "5" errors = "0" path_to_files = "" basecode_dir = "" read_subdirs = "true" clustertype = "" store_matches = "30" suffixes = ".cpp,.CPP,c++,C++,.c,.C,.h,.H,.hpp,.HPP" language_name = "c/c++" comparison_mode = "0" country_tag = "en" min_token = "12" date = "1535869553370"/>
-</jplag_infos>
