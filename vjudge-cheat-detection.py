@@ -11,6 +11,8 @@ import difflib
 import re
 import mosspy
 import glob
+import collections
+from jinja2 import Template, PackageLoader, Environment
 
 
 parser = argparse.ArgumentParser(description='Detect cheat in vjudge contest.')
@@ -74,7 +76,6 @@ def remove_duplicate(submission_dir):
         os.remove(file_name)
     return remove_list
 
-
 def jplag_build(contest_title, base_dir, unzip_dir, result_buffer_dir):
     language_list = ['c/c++', 'java17', 'python3']
     buffer_dir_list = ['c++', 'java', 'python']
@@ -98,13 +99,45 @@ def jplag_build(contest_title, base_dir, unzip_dir, result_buffer_dir):
             pdfkit.from_file(html_file_list, os.path.join(
                 base_dir, f"{contest_title} {dir_lan} jplag.pdf"))
 
+go_back_tag = '<p><a href="javascript:history.back()">Go Back</a></p>'
+
+Problem = collections.namedtuple('Problem', 'url problem')
+
+def replace_html(html_file, source, target):
+    with open(html_file, 'r') as f:
+        html = f.readlines()
+    with open(html_file, 'w') as f:
+        f.writelines([line.replace(source, target) for line in html])
+    
+
+def build_html(base_dir, all_index_name, build_dir_list):
+    if len(build_dir_list) == 0:
+        return
+
+    problem_list = []
+    for buffer_dir in build_dir_list:
+        index_path = os.path.join(buffer_dir, 'index.html')
+        html_list = [index_path]
+        html_list.extend(list(glob.glob(os.path.join(buffer_dir, '*top.html'))))
+        for html_file in html_list:
+            replace_html(html_file, '\n<body>', f'\n{go_back_tag}<body>')
+            replace_html(html_file, '><body', f'>{go_back_tag}<body')
+        problem = os.path.basename(buffer_dir)
+        problem_list.append(Problem(os.path.relpath(index_path, base_dir), problem))
+
+    env = Environment(loader=PackageLoader('vjudge-cheat-detection', 'templates'))
+    template = env.get_template('base.html')
+    all_index_html = template.render(problems=problem_list, title='Moss Result')
+    with open(os.path.join(base_dir, all_index_name), 'w') as f:
+        f.write(all_index_html)
+
 
 def moss_build(contest_title, base_dir, unzip_dir, result_buffer_dir, moss_userid):
     language_list = ['cc', 'java', 'python']
     buffer_dir_list = ['c++', 'java', 'python']
     prefix_list = ['cpp', 'java', 'py']
     for language, dir_lan, prefix in zip(language_list, buffer_dir_list, prefix_list):
-        html_file_list = []
+        build_dir_list = []
         for problem in os.listdir(unzip_dir):
             submission_dir = os.path.join(unzip_dir, problem)
             buffer_dir = os.path.join(result_buffer_dir, dir_lan, problem)
@@ -112,24 +145,19 @@ def moss_build(contest_title, base_dir, unzip_dir, result_buffer_dir, moss_useri
 
             if len(list(glob.glob(wildcard))) <= 1:
                 continue
-            m = mosspy.Moss(moss_userid, language)
-            m.addFilesByWildcard(wildcard)
-            url = m.send()
+            # m = mosspy.Moss(moss_userid, language)
+            # m.addFilesByWildcard(wildcard)
+            # url = m.send()
 
-            print("Report Url: " + url)
-            if not url.startswith("http"):
-                continue
-            mosspy.download_report(url, buffer_dir + os.sep, connections=8)
+            # print("Report Url: " + url)
+            # if not url.startswith("http"):
+            #     continue
+            # mosspy.download_report(url, buffer_dir + os.sep, connections=8)
 
-            if len(list(glob.glob(os.path.join(buffer_dir, "*")))) <= 1:
-                continue
             html_file = os.path.join(buffer_dir, 'index.html')
             if os.path.exists(html_file):
-                html_file_list.append(html_file)
-
-        if len(html_file_list) > 0:
-            pdfkit.from_file(html_file_list, os.path.join(
-                base_dir, f"{contest_title} {dir_lan} moss.pdf"))
+                build_dir_list.append(buffer_dir)
+        build_html(base_dir, f'{contest_title} {dir_lan} moss.html', build_dir_list)
 
 
 def process(file, output_zip=False, unique_submission=False, moss_userid=None):
@@ -158,10 +186,10 @@ def process(file, output_zip=False, unique_submission=False, moss_userid=None):
             os.makedirs(result_buffer_dir_moss)
         moss_build(contest_title, base_dir, unzip_dir, result_buffer_dir_moss, moss_userid[0])
     
-    result_buffer_dir_jplag = os.path.join(base_dir, 'result_buffer_jplag')
-    if not os.path.exists(result_buffer_dir_jplag):
-        os.makedirs(result_buffer_dir_jplag)
-    jplag_build(contest_title, base_dir, unzip_dir, result_buffer_dir_jplag)
+    # result_buffer_dir_jplag = os.path.join(base_dir, 'result_buffer_jplag')
+    # if not os.path.exists(result_buffer_dir_jplag):
+    #     os.makedirs(result_buffer_dir_jplag)
+    # jplag_build(contest_title, base_dir, unzip_dir, result_buffer_dir_jplag)
 
     if output_zip:
         shutil.make_archive(f"{base_dir} report", 'zip', base_dir)

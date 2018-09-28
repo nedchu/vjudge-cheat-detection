@@ -1,0 +1,14 @@
+<html>
+<head>
+<title>{{ title }}</title>
+</head>
+<body>
+<div id="content">
+<ul>
+{% for p in problems %}
+    <li><a href="{{ p.url }}">{{ p.problem }}</a></li>
+{% endfor %}
+</ul>
+</div>
+</body>
+</html>
