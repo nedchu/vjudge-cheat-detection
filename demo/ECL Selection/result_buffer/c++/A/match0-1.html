@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>.\demo\ECL_Selection\submissions\A\11879496_10152160137_A.cpp</title>
+</head>
+<body bgcolor="white">
+<hr/>
+.\demo\ECL_Selection\submissions\A\11879960_826018427_A.cpp<p></p><pre>
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdio&gt;
+#include &lt;stack&gt;
+#include &lt;cstring&gt;
+#include &lt;algorithm&gt;
+#include &lt;queue&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+#include &lt;cmath&gt;
+#include &lt;bitset&gt;
+#include &lt;iomanip&gt;
+#include &lt;set&gt;
+<a name="0"></a><font color="#FF0000"><a href="match0-0.html" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_47.gif"/></a>
+
+using namespace std;
+
+int main()
+{
+    freopen("Input.txt","r",stdin);freopen("Output.txt","w",stdout);
+    int n,k;
+    cin&gt;&gt;n&gt;&gt;k;
+    if (n&lt;=k) cout&lt;&lt;2&lt;&lt;endl;
+</font>    else{
+    int ans=2*(n/k);
+    int left=2*(n%k);
+    if (left!=0){if (left&lt;=k) ans++; else ans+=2;}
+    cout&lt;&lt;ans&lt;&lt;endl;
+    }
+    return 0;
+}</pre>
+</body>
+</html>

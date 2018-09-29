@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>.\demo\ECL_Selection\submissions\J\11880530_team501_J.cpp</title>
+</head>
+<body bgcolor="white">
+<hr/>
+.\demo\ECL_Selection\submissions\J\11881791_826018427_J.cpp<p></p><pre>
+/* Farewell. */
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdio&gt;
+#include &lt;stack&gt;
+#include &lt;cstring&gt;
+#include &lt;algorithm&gt;
+#include &lt;queue&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+#include &lt;cmath&gt;
+#include &lt;bitset&gt;
+#include &lt;iomanip&gt;
+#include &lt;set&gt;
+using namespace std;
+#define lson l,m,rt&lt;&lt;1
+#define rson m+1,r,rt&lt;&lt;1|1
+#define MP make_pair
+#define MT make_tuple
+#define PB push_back
+typedef long long  LL;
+typedef unsigned long long ULL;
+typedef pair&lt;int,int &gt; pii;
+typedef pair&lt;LL,LL&gt; pll;
+typedef pair&lt;double,double &gt; pdd;
+typedef pair&lt;double,int &gt; pdi;
+const int INF = 0x7fffffff;
+const LL INFF = 0x7f7f7f7fffffffff;
+#define debug(x) std::cerr &lt;&lt; #x &lt;&lt; " = " &lt;&lt; (x) &lt;&lt; std::endl
+const int MAXM = 5e3+17;
+const int MOD = 1e9+7;
+const int MAXN = 1e3+17;
+LL uN,vN;  //u,vÊýÄ¿
+vector&lt;int &gt; G[MAXN];
+int linker[MAXN];
+int used[MAXN];
+bool dfs(int u)
+{
+    for(int i = 0;i&lt;G[u].size();++i)
+    {
+        int v = G[u][i];
+<a name="0"></a><font color="#FF0000"><a href="match5-0.html" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_5.gif"/></a>
+
+        if(!used[v])
+        {
+            used[v]=1;
+            if(linker[v]==-1||dfs(linker[v]))
+            {
+                linker[v]=u;
+</font>                return true;
+            }    
+        }  
+    }
+    return false;  
+}    
+int hungary()
+{
+    int res=0;
+    int u;
+    memset(linker,-1,sizeof(linker));
+    for(u=0;u&lt;uN;u++)
+    {
+        memset(used,0,sizeof(used));
+        if(dfs(u))  res++;
+    } 
+    return res;   
+}
+int a[MAXN],t[MAXN];
+int cal(int x)
+{
+    int sum  =0;
+    while(x)
+    {
+        sum+=x%10;
+        x/=10;
+    }
+    return sum;
+}
+int num[1000+17];
+int main(int argc, char const *argv[])
+{
+    //#ifdef GoodbyeMonkeyKing
+    freopen("Input.txt","r",stdin);freopen("Output.txt","w",stdout);
+    //#endif
+    memset(G, 0, sizeof(G));
+    for(int i=1;i&lt;1000;++i) num[i] = cal(i);
+    int n,m;
+    cin&gt;&gt;n&gt;&gt;m;
+    uN = n;
+    vN = m;
+    for (int i = 0; i &lt; n; ++i)
+        cin&gt;&gt;a[i];
+    for (int i = 0; i &lt; m; ++i)
+        cin&gt;&gt;t[i];
+    for (int i = 0; i &lt; n; ++i)
+    {
+        for (int j = 0; j &lt; m; ++j)
+        {
+            // debug(num[a[i]/1000]);
+            // debug(num[t[j]%1000]);
+            if((num[a[i]/1000]==num[t[j]%1000])||(num[a[i]%1000]==num[t[j]/1000]))
+            {
+                G[i].push_back(j);
+            }
+        }
+    }
+    int ans = hungary();
+    cout&lt;&lt;ans&lt;&lt;endl;
+    for (int i = 0;i&lt;m;++i)
+    {
+        if(linker[i]==-1) continue;
+        int x = a[linker[i]],y = t[i];
+        if(num[x/1000]==num[y%1000])
+            cout&lt;&lt;"AT "&lt;&lt;x&lt;&lt;" "&lt;&lt;y&lt;&lt;endl;
+        else
+            cout&lt;&lt;"TA "&lt;&lt;y&lt;&lt;" "&lt;&lt;x&lt;&lt;endl;
+    }
+    return 0;
+}</pre>
+</body>
+</html>

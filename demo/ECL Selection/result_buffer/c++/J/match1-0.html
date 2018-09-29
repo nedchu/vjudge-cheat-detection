@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>.\demo\ECL_Selection\submissions\J\11881202_ecnu16_J.cpp</title>
+</head>
+<body bgcolor="white">
+<hr/>
+.\demo\ECL_Selection\submissions\J\11881202_ecnu16_J.cpp<p></p><pre>
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int N = 1000;
+
+int n, m;
+vector&lt;int&gt; g[N];
+int a[N], b[N];
+int from[N], tot, use[N];
+
+bool match(int x) {
+    for (int v: g[x]) {
+<a name="1"></a><font color="#00FF00"><a href="match1-1.html" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_7.gif"/></a>
+
+        if (!use[v]) {
+            use[v] = 1;
+            if (from[v] == -1 || match(from[v])) {
+                from[v] = x;
+</font>                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int hungary() {
+    tot = 0;
+    memset(from, -1, sizeof from);
+    for (int i = 1; i &lt;= n; ++i) {
+        memset(use, 0, sizeof use);
+        if (match(i)) ++tot;
+    }
+    return tot;
+}
+
+int ok(int a, int b) {
+    if ((a / 100000) + (a / 10000) % 10 + (a / 1000) % 10 ==
+        (b / 100) % 10 + (b / 10) % 10 + b % 10)
+        return 1;
+    return 0;
+}
+
+int main() {
+    freopen("input.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
+    cin &gt;&gt; n &gt;&gt; m;
+<a name="0"></a><font color="#FF0000"><a href="match1-1.html" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+    for (int i = 1; i &lt;= n; ++i)
+        cin &gt;&gt; a[i];
+    for (int i = 1; i &lt;= m; ++i)
+        cin &gt;&gt; b[i];
+    for (int i = 1; i &lt;= n; ++i)
+        for (int j = 1; j &lt;= m; ++j)
+            if (ok(a[i], b[j]) || ok(b[j], a[i]))
+</font>                g[i].push_back(n + j);
+    int ans = hungary();
+    cout &lt;&lt; ans &lt;&lt; endl;
+    int tot = 0;
+    for (int j = 1; j &lt;= m; ++j) {
+        if (from[n + j] != -1) {
+            int i = from[n + j];
+            if (ok(a[i], b[j])) printf("AT %d %d\n", a[i], b[j]);
+            else printf("TA %d %d\n", b[j], a[i]);\
+            tot++;
+        }
+    }
+    assert (tot == ans);
+}
+</pre>
+</body>
+</html>
