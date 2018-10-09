@@ -3,12 +3,9 @@ import requests
 import zipfile
 import os
 import bs4
-import pdfkit
 import shutil
 import json
-import subprocess
 import difflib
-import re
 import mosspy
 import glob
 import collections
@@ -118,7 +115,6 @@ def moss_download(unzip_dir, result_buffer_dir, moss_userid):
     buffer_dir_list = ['c++', 'java', 'python']
     prefix_list = ['cpp', 'java', 'py']
     for language, dir_lan, prefix in zip(language_list, buffer_dir_list, prefix_list):
-        build_dir_list = []
         for problem in os.listdir(unzip_dir):
             submission_dir = os.path.join(unzip_dir, problem)
             buffer_dir = os.path.join(result_buffer_dir, dir_lan, problem)
@@ -148,7 +144,7 @@ def moss_build(contest_title, base_dir, result_dir):
             html_file = os.path.join(buffer_dir, 'index.html')
             if os.path.exists(html_file):
                 build_dir_list.append(buffer_dir)
-        build_html(base_dir, f'{contest_title} {dir_lan} moss.html', build_dir_list)
+        build_html(base_dir, f'{contest_title} {dir_lan}.html', build_dir_list)
 
 
 def process(file, output_zip=False, unique_submission=False, moss_userid=None):
