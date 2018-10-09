@@ -31,7 +31,7 @@ vjudge 比赛的拥有者能够在 Setting 中导出所有的提交文件打包�
 
 利用 `python vjudge-cheat-detection.py -h` 获取帮助。
 
-展示 demo: https://nedchu.github.io/vjudge-cheat-detection/，使用了许久以前的一次选拔 [ECL Selection](https://vjudge.net/contest/203228)
+演示 demo: https://nedchu.github.io/vjudge-cheat-detection/ ，使用了许久以前的一次选拔 [ECL Selection](https://vjudge.net/contest/203228)
 
 获得输入内容中所说的提交源码压缩文件后，指定该文件的目录为参数运行，需要通过 `-m` 参数指定 Moss userid 才能够正常使用，若是没有就需要通过 [Moss主页](http://theory.stanford.edu/~aiken/moss/) 中的 Registering for Moss 通过邮箱进行注册。
 
