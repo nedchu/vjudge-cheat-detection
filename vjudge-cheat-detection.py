@@ -27,28 +27,29 @@ def ensure_list(item):
 def get_config():
     parser = argparse.ArgumentParser(description='Detect cheat in vjudge contest.')
 
+    # basic configuration
     parser.add_argument(dest='files', type=str, nargs='+',
                         help='zip files of vjudge contest submission')
-    parser.add_argument('-z', '--zip', dest='output_zip',
-                        action='store_true', help='build zip archive for output')
-    parser.add_argument('-u', '--unique', dest='unique_submission', action='store_true',
-                        help='retain only one copy of code when meeting similar submissions of a single user')
-    parser.add_argument('-m', '--moss', dest='moss_userid', action='store', help='specify moss userid and use moss to detect cheating, regiester one if you don\'t have your own userid')
-    parser.add_argument('-c', '--config', dest='config_file', action='store', help='config file')
-    parser.add_argument('-iu', '--ignore-userid', nargs='+', dest='ignore_userid', default=[])
-    parser.add_argument('-ip', '--ignore-problem', nargs='+', dest='ignore_problem', default=[])
-    parser.add_argument('-l', '--language', dest='language', nargs='+', default=['cc'])
-    parser.add_argument('-b', '--base-dir', dest='base_dir')
-    parser.add_argument('-M', '--maximal-match', type=int, dest='maximal_match', default=10)
-    parser.add_argument('-n', '--report-number', type=int, dest='report_number', default=250)
+    parser.add_argument('-c', '--config', dest='config_file', help='YAML config file path')
+    parser.add_argument('-l', dest='language', nargs='+', default=['cc'], help='language to detect')
+    parser.add_argument('-a', dest='add_dir', help='additional files to detect cheating, put them under ${add_dir}/${problem_id}')
+    # preprocess configuration
+    parser.add_argument('-r', dest='remove_duplicate', action='store_true', help='remove duplicate submissions of a user')
+    parser.add_argument('-u', dest='include_userid', nargs='+', default=[], help='regex of user id to be included, include all if not specified')
+    parser.add_argument('-iu', dest='ignore_userid', nargs='+', default=[], help='user id to be ignored, has higher priority than include')
+    parser.add_argument('-ip', dest='ignore_problem', nargs='+', default=[], help='problem to be ignored')
+    # moss configuration
+    parser.add_argument('-id', dest='moss_userid', help='moss userid, regiester one from e-mail if you don\'t have one')
+    parser.add_argument('-b', dest='base_dir', help='use in moss, put base files under ${base_dir}/${problem_id}/')
+    parser.add_argument('-m', dest='maximal_match', type=int, default=10, help='use in moss, maximal appearance before identified as code in base file')
+    parser.add_argument('-n', dest='report_number', type=int, default=250, help='use in moss, maximal item number in report')
 
     config = parser.parse_args()
     if config.config_file is not None:
         with open(config.config_file, "r", encoding='utf-8') as f:
             y = yaml.load(f)
             config.moss_userid = config.moss_userid or y.get("moss_userid")
-            config.output_zip = config.output_zip or y.get("output_zip")
-            config.unique_submission = config.unique_submission or y.get("unique_submission")
+            config.remove_duplicate = config.remove_duplicate or y.get("remove_duplicate")
             config.ignore_userid.extend(ensure_list(y.get("ignore_userid", [])))
             config.language.extend(ensure_list(y.get("language", [])))
     return config
@@ -96,7 +97,7 @@ def remove_duplicate(submission_dir):
         os.remove(file_name)
     return remove_list
 
-def preprocess(unzip_dir, unique_submission, ignore_problem, ignore_userid):
+def preprocess(unzip_dir, remove_duplicate, ignore_problem, ignore_userid):
     all_removed = []
     for problem in ignore_problem:
         problem_dir = os.path.join(unzip_dir, problem)
@@ -116,7 +117,7 @@ def preprocess(unzip_dir, unique_submission, ignore_problem, ignore_userid):
         os.remove(f)
     output_list("Ignore submission by userid:", all_removed)
 
-    if config.unique_submission:
+    if remove_duplicate:
         all_removed = []
         for problem in os.listdir(unzip_dir):
             submission_dir = os.path.join(unzip_dir, problem)
@@ -135,7 +136,7 @@ def preprocess(unzip_dir, unique_submission, ignore_problem, ignore_userid):
 
 # postprocess
 def replace_html(html_file, source, target):
-    with open(html_file, 'r', encoding='GB2312') as f:
+    with open(html_file, 'r', encoding='utf-8') as f:
         html = f.readlines()
     with open(html_file, 'w', encoding='utf-8') as f:
         f.writelines([line.replace(source, target) for line in html])
@@ -232,7 +233,7 @@ def process(file, config):
     if not unzip_file(file, unzip_dir):
         return
 
-    preprocess(unzip_dir, config.unique_submission, config.ignore_problem, config.ignore_userid)
+    preprocess(unzip_dir, config.remove_duplicate, config.ignore_problem, config.ignore_userid)
     
     result_buffer_dir = os.path.join(base_dir, 'result_buffer')
     result_dir = os.path.join(base_dir, 'result')
@@ -245,10 +246,6 @@ def process(file, config):
         shutil.rmtree(result_dir)
     shutil.copytree(result_buffer_dir, result_dir)
     moss_build(contest_title, base_dir, result_dir)
-
-    if config.output_zip:
-        shutil.make_archive(f"{base_dir} report", 'zip', base_dir)
-
 
 if __name__ == '__main__':
     config = get_config()

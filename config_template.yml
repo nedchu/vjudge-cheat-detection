@@ -1,0 +1,12 @@
+# Put constant configuration here
+
+# this moss id is invalid, use your own one
+moss_userid: 987654321
+# languge to detect, support cc, java, python
+language: ["cc"]
+# include all now, specify your regex
+include_userid: []
+# use "" if it's str
+ignore_userid: ["123_456", Mottox, wotok]
+# use true and false
+remove_duplicate: true

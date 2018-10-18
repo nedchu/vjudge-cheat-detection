@@ -1,4 +1,4 @@
 Jinja2==2.9.6
 requests==2.18.4
-mosspy==1.0.5
 beautifulsoup4==4.6.0
+PyYAML==3.13
