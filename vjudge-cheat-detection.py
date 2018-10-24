@@ -12,6 +12,7 @@ import collections
 import logging
 import mosspy
 import yaml
+import re
 
 from jinja2 import Template, PackageLoader, Environment
 
@@ -50,8 +51,14 @@ def get_config():
             y = yaml.load(f)
             config.moss_userid = config.moss_userid or y.get("moss_userid")
             config.remove_duplicate = config.remove_duplicate or y.get("remove_duplicate")
+            config.maximal_match = config.maximal_match or y.get("maximal_match")
+            config.report_number = config.report_number or y.get("report_number")
             config.ignore_userid.extend(ensure_list(y.get("ignore_userid", [])))
             config.language.extend(ensure_list(y.get("language", [])))
+            config.include_userid.extend(ensure_list(y.get("include_userid", [])))
+            if len(config.include_userid) == 0:
+                config.include_userid.append(".+")
+            config.include_userid = list(map(lambda x: re.compile(f"^{x}$"), config.include_userid))
     return config
 
 # prepare
@@ -83,7 +90,7 @@ def output_list(comment, item_list):
     print('\n'.join(item_list))
 
 
-def remove_duplicate(submission_dir):
+def remove_duplicate_submissions(submission_dir):
     user_sub = {}
     for sub in os.listdir(submission_dir):
         user_id = '_'.join(sub.split('_')[1:-1])
@@ -97,9 +104,9 @@ def remove_duplicate(submission_dir):
         os.remove(file_name)
     return remove_list
 
-def preprocess(unzip_dir, remove_duplicate, ignore_problem, ignore_userid):
+def preprocess(unzip_dir, config):
     all_removed = []
-    for problem in ignore_problem:
+    for problem in config.ignore_problem:
         problem_dir = os.path.join(unzip_dir, problem)
         if os.path.exists(problem_dir):
             shutil.rmtree(problem_dir)
@@ -111,17 +118,19 @@ def preprocess(unzip_dir, remove_duplicate, ignore_problem, ignore_userid):
         problem_dir = os.path.join(unzip_dir, problem)
         for sub in os.listdir(problem_dir):
             user_id = '_'.join(sub.split('_')[1:-1])
-            if user_id in ignore_userid:
+            if not any((re.match(regex, user_id) for regex in config.include_userid)):
+                all_removed.append(os.path.join(problem_dir, sub))
+            elif user_id in config.ignore_userid:
                 all_removed.append(os.path.join(problem_dir, sub))
     for f in all_removed:
         os.remove(f)
     output_list("Ignore submission by userid:", all_removed)
 
-    if remove_duplicate:
+    if config.remove_duplicate:
         all_removed = []
         for problem in os.listdir(unzip_dir):
             submission_dir = os.path.join(unzip_dir, problem)
-            all_removed.extend(remove_duplicate(submission_dir))
+            all_removed.extend(remove_duplicate_submissions(submission_dir))
         output_list("Removed duplicate file:", all_removed)
     
     # rename *.c to *.cpp
@@ -191,6 +200,11 @@ def moss_download(unzip_dir, result_buffer_dir, config):
                 moss_base_file = os.path.join(config.base_dir, f"{problem}.cpp")
                 if os.path.exists(moss_base_file):
                     m.addBaseFile(moss_base_file, "base")
+            if config.add_dir is not None:
+                moss_add_dir = os.path.join(config.add_dir, problem)
+                moss_add_wildcard = os.path.join(moss_add_dir, "*")
+                if os.path.exists(moss_add_dir) and len(glob.glob(moss_add_wildcard)) > 0:
+                    m.addFilesByWildcard(moss_add_wildcard)
             wildcard = os.path.join(submission_dir, f"*.{prefix}")
             m.addFilesByWildcard(wildcard)
             url = m.send()
@@ -233,18 +247,14 @@ def process(file, config):
     if not unzip_file(file, unzip_dir):
         return
 
-    preprocess(unzip_dir, config.remove_duplicate, config.ignore_problem, config.ignore_userid)
+    preprocess(unzip_dir, config)
     
-    result_buffer_dir = os.path.join(base_dir, 'result_buffer')
     result_dir = os.path.join(base_dir, 'result')
-    if not os.path.exists(result_buffer_dir):
-        os.makedirs(result_buffer_dir)
-    moss_download(unzip_dir, result_buffer_dir, config)
-
-    # copy result buffer and postprocess
-    if os.path.exists(result_dir):
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+    else:
         shutil.rmtree(result_dir)
-    shutil.copytree(result_buffer_dir, result_dir)
+    moss_download(unzip_dir, result_dir, config)
     moss_build(contest_title, base_dir, result_dir)
 
 if __name__ == '__main__':
