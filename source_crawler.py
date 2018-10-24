@@ -20,10 +20,8 @@ from selenium.webdriver.support.ui import Select
 def get_config():
     parser = argparse.ArgumentParser(description='Download source code.')
 
-    # basic configuration
     parser.add_argument(dest='files', type=str, nargs='+',
                         help='zip files of vjudge contest submission')
-    # TODO: add ip
     parser.add_argument('-ip', dest='ignore_problem', nargs='+', default=[], help='problem to be ignored')
     parser.add_argument('-n', dest='page_num', type=int)
 
