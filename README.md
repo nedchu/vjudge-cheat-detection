@@ -31,34 +31,34 @@ vjudge 比赛的拥有者能够在 Setting 中导出所有的提交文件打包�
 
 ### 参数说明
 
-| 参数 |  变量类型 | 说明 |
-| ------ | ------ | ---------------|
-| -c | `file_path` | YAML配置文件，书写规范见配置文件部分 |
-| -l | `list<str>` | 检测的语言，支持：`cc, java, python`，默认只检测C++ |
-| -a | `directory` | `${add_dir}/${problem_id}` 下是题号对应的附加检测文件，检查对网络代码或以往作业代码的抄袭 |
-| -r | 无变量 | 是否移除用户同一题的重复提交 |
-| -u | `list<regex>` | 一系列正则表达式，匹配任一正则表达式的用户名会被包含进检测 |
-| -iu | `list<str>` | 需要忽略的用户名，优先级高于包含 |
-| -ip | `list<str>` | 需要忽略的问题ID |
-| -id | `str` | Moss 参数，检测使用的 Moss UserID，如果没有请使用邮箱进行注册 |
-| -b | `directory` | Moss 参数，`${base_dir}/${problem_id}` 下是题号对应的基文件，与基文件相同的代码不会被判定为抄袭 |
-| -m | `int` | Moss 参数，代码片出现多少次后被判定为基文件内容，默认为10 |
-| -n | `int` | Moss 参数，报告中最多呈现多少条匹配报告，默认为250，该值较大时下载报告需要较多时间 |
+| 参数 | 变量类型      | 说明                                                                                            |
+| ---- | ------------- | ----------------------------------------------------------------------------------------------- |
+| -c   | `file_path`   | YAML配置文件，书写规范见配置文件部分                                                            |
+| -l   | `list<str>`   | 检测的语言，支持：`cc, java, python`，默认只检测C++                                             |
+| -a   | `directory`   | `${add_dir}/${problem_id}` 下是题号对应的附加检测文件，检查对网络代码或以往作业代码的抄袭       |
+| -r   | 无变量        | 是否移除用户同一题的重复提交                                                                    |
+| -u   | `list<regex>` | 一系列正则表达式，匹配任一正则表达式的用户名会被包含进检测                                      |
+| -iu  | `list<str>`   | 需要忽略的用户名，优先级高于包含                                                                |
+| -ip  | `list<str>`   | 需要忽略的问题ID                                                                                |
+| -id  | `str`         | Moss 参数，检测使用的 Moss UserID，如果没有请使用邮箱进行注册                                   |
+| -b   | `directory`   | Moss 参数，`${base_dir}/${problem_id}` 下是题号对应的基文件，与基文件相同的代码不会被判定为抄袭 |
+| -m   | `int`         | Moss 参数，代码片出现多少次后被判定为基文件内容，默认为10                                       |
+| -n   | `int`         | Moss 参数，报告中最多呈现多少条匹配报告，默认为250，该值较大时下载报告需要较多时间              |
 
 ### 配置文件
 长期无需改变的参数可以保存于 YAML 配置文件中供程序使用，优先使用命令行参数，其次使用配置文件。
 
 这是 [配置文件模板](./config_template.yml) 请自行修改使用。
 
-| 变量 |  变量类型 | 对应参数 |
-| ------ | ------ | --------------- |
-| language | `list<str>` | -l |
-| remove_duplicate | `bool` | -r |
-| ignore_userid | `list<str>` | -iu|
-| include_userid | `list<regex>` | -u |
-| moss_userid | `str` | -id |
-| maximal_match | `int` | -m |
-| report_num | `int` | -n |
+| 变量             | 变量类型      | 对应参数 |
+| ---------------- | ------------- | -------- |
+| language         | `list<str>`   | -l       |
+| remove_duplicate | `bool`        | -r       |
+| ignore_userid    | `list<str>`   | -iu      |
+| include_userid   | `list<regex>` | -u       |
+| moss_userid      | `str`         | -id      |
+| maximal_match    | `int`         | -m       |
+| report_num       | `int`         | -n       |
 ## 爬取网络代码
 `source_crawler.py`中的代码能够从 Baidu 搜索结果中抽取代码，构建出额外的代码辅助作弊检测。使用了 Selenium 进行爬取。
 
