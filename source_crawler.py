@@ -23,7 +23,7 @@ def get_config():
     parser.add_argument(dest='files', type=str, nargs='+',
                         help='zip files of vjudge contest submission')
     parser.add_argument('-ip', dest='ignore_problem', nargs='+', default=[], help='problem to be ignored')
-    parser.add_argument('-n', dest='page_num', type=int)
+    parser.add_argument('-n', dest='page_num', type=int, default=1)
 
     config = parser.parse_args()
     return config
@@ -45,11 +45,10 @@ Solution = collections.namedtuple("Solution", "source url")
 
 def handle_csdn(driver):
     solutions = []
-    try:
-        time.sleep(1)
-        driver.find_element_by_id("btn-readmore").click()
-    except:
-        pass
+    driver.execute_script('window.scrollTo(0, document.body.scrollHeight)')
+    time.sleep(1)
+    more = driver.find_element_by_id("btn-readmore")
+    more.click()
     for e in driver.find_elements_by_class_name("language-cpp"):
         solutions.append(Solution(e.text, driver.current_url))
     return solutions
@@ -83,13 +82,13 @@ def crawl_baidu(search_item, pages=1):
         elements = driver.find_elements_by_class_name("t")
         main_page_handle = driver.current_window_handle
         for e in elements:
-            time.sleep(0.5)
+            time.sleep(1)
             e.find_element_by_tag_name("a").click()
             for h in driver.window_handles:
                 if h != main_page_handle:
                     driver.switch_to.window(h)
                     break
-            time.sleep(0.5)
+            time.sleep(1)
             real_url_list.append(driver.current_url)
             solutions.extend(handle_page(driver))
             driver.close()

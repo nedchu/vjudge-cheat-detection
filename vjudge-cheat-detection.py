@@ -42,8 +42,8 @@ def get_config():
     # moss configuration
     parser.add_argument('-id', dest='moss_userid', help='moss userid, regiester one from e-mail if you don\'t have one')
     parser.add_argument('-b', dest='base_dir', help='use in moss, put base files under ${base_dir}/${problem_id}/')
-    parser.add_argument('-m', dest='maximal_match', type=int, default=10, help='use in moss, maximal appearance before identified as code in base file')
-    parser.add_argument('-n', dest='report_number', type=int, default=250, help='use in moss, maximal item number in report')
+    parser.add_argument('-m', dest='maximal_match', type=int, default=0, help='use in moss, maximal appearance before identified as code in base file')
+    parser.add_argument('-n', dest='report_number', type=int, default=0, help='use in moss, maximal item number in report')
 
     config = parser.parse_args()
     if config.config_file is not None:
@@ -51,8 +51,8 @@ def get_config():
             y = yaml.load(f)
             config.moss_userid = config.moss_userid or y.get("moss_userid")
             config.remove_duplicate = config.remove_duplicate or y.get("remove_duplicate")
-            config.maximal_match = config.maximal_match or y.get("maximal_match")
-            config.report_number = config.report_number or y.get("report_number")
+            config.maximal_match = config.maximal_match or y.get("maximal_match") or 10
+            config.report_number = config.report_number or y.get("report_number") or 250
             config.ignore_userid.extend(ensure_list(y.get("ignore_userid", [])))
             config.language.extend(ensure_list(y.get("language", [])))
             config.include_userid.extend(ensure_list(y.get("include_userid", [])))
