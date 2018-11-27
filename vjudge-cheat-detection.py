@@ -5,12 +5,10 @@ import os
 import bs4
 import shutil
 import json
-import difflib
 import mosspy
 import glob
 import collections
 import logging
-import mosspy
 import yaml
 import re
 

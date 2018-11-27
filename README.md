@@ -3,7 +3,7 @@
 ## 简介
 初步检测在 [vjudge](http://vjudge.net/) 比赛中的作弊行为，给出方便进一步查验的报告。基于 Python3.6 编写。
 
-使用 [Moss](http://theory.stanford.edu/~aiken/moss/) 进行作弊检测。使用了 [moss.py](https://github.com/soachishti/moss.py) 调用服务。
+使用 [Moss](http://theory.stanford.edu/~aiken/moss/) 进行作弊检测。使用了 [moss.py](https://github.com/soachishti/moss.py) 调用服务。使用了 [docsify](https://docsify.js.org/) 进行文档构建。
 
 支持如下功能：
 
