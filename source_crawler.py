@@ -47,10 +47,13 @@ def handle_csdn(driver):
     solutions = []
     driver.execute_script('window.scrollTo(0, document.body.scrollHeight)')
     time.sleep(1)
-    more = driver.find_element_by_id("btn-readmore")
-    more.click()
-    for e in driver.find_elements_by_class_name("language-cpp"):
-        solutions.append(Solution(e.text, driver.current_url))
+    try:
+        more = driver.find_element_by_id("btn-readmore")
+        more.click()
+        for e in driver.find_elements_by_class_name("language-cpp"):
+            solutions.append(Solution(e.text, driver.current_url))
+    except:
+        pass
     return solutions
 
 def handle_bokeyuan(driver):
