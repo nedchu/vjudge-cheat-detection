@@ -15,6 +15,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
+import util
 
 
 def get_config():
@@ -31,13 +32,11 @@ def get_config():
 Problem = collections.namedtuple("Problem", "oj_id num")
 
 def get_problem_list(contest_id):
-    res = requests.get(f"https://vjudge.net/contest/{contest_id}")
-    soup = bs4.BeautifulSoup(res.text, 'lxml')
-    json_html = soup.find("textarea")
-    if json_html is None:
+    json_contest = util.get_contest_info(contest_id)
+    if json_contest is None:
         return None
     else:
-        problems = json.loads(json_html.text)["problems"]
+        problems = json_contest["problems"]
         problems = [Problem(p["oj"] + p["probNum"], p["num"]) for p in problems]
         return problems
 
@@ -114,7 +113,7 @@ def process(file, config):
         print(f"{file} is not zip file.")
         return
 
-    contest_id = os.path.basename(file[:-4])
+    contest_id = util.get_contest_id(file)
     problems = get_problem_list(contest_id)
     print(problems)
     base_dir = os.path.join(file[:-4] + "_add")

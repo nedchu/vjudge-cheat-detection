@@ -11,17 +11,9 @@ import collections
 import logging
 import yaml
 import re
+import util
 
 from jinja2 import Template, PackageLoader, Environment
-
-
-def ensure_list(item):
-    if item is None:
-        return []
-    elif type(item) is list:
-        return item
-    else:
-        return [item]
 
 def get_config():
     parser = argparse.ArgumentParser(description='Detect cheat in vjudge contest.')
@@ -51,9 +43,9 @@ def get_config():
             config.remove_duplicate = config.remove_duplicate or y.get("remove_duplicate")
             config.maximal_match = config.maximal_match or y.get("maximal_match") or 10
             config.report_number = config.report_number or y.get("report_number") or 250
-            config.ignore_userid.extend(ensure_list(y.get("ignore_userid", [])))
-            config.language.extend(ensure_list(y.get("language", [])))
-            config.include_userid.extend(ensure_list(y.get("include_userid", [])))
+            config.ignore_userid.extend(util.ensure_list(y.get("ignore_userid", [])))
+            config.language.extend(util.ensure_list(y.get("language", [])))
+            config.include_userid.extend(util.ensure_list(y.get("include_userid", [])))
             if len(config.include_userid) == 0:
                 config.include_userid.append(".+")
             config.include_userid = list(map(lambda x: re.compile(f"^{x}$"), config.include_userid))
@@ -71,14 +63,11 @@ def unzip_file(zip_file_name, unzip_dir):
 
 
 def get_contest_title(contest_id):
-    res = requests.get(f"https://vjudge.net/contest/{contest_id}")
-    soup = bs4.BeautifulSoup(res.text, 'lxml')
-    json_html = soup.find("textarea")
-    if json_html is None:
+    json_contest = util.get_contest_info(contest_id)
+    if json_contest is None:
         return None
     else:
-        return json.loads(json_html.text)["title"] or None
-
+        return json_contest["title"] or None
 
 # preprocess
 def output_list(comment, item_list):
@@ -91,7 +80,7 @@ def output_list(comment, item_list):
 def remove_duplicate_submissions(submission_dir):
     user_sub = {}
     for sub in os.listdir(submission_dir):
-        user_id = '_'.join(sub.split('_')[1:-1])
+        user_id = util.get_userid(sub)
         user_sub.setdefault(user_id, []).append(os.path.join(submission_dir, sub))
     
     remove_list = []
@@ -115,7 +104,7 @@ def preprocess(unzip_dir, config):
     for problem in os.listdir(unzip_dir):
         problem_dir = os.path.join(unzip_dir, problem)
         for sub in os.listdir(problem_dir):
-            user_id = '_'.join(sub.split('_')[1:-1])
+            user_id = util.get_userid(sub)
             if not any((re.match(regex, user_id) for regex in config.include_userid)):
                 all_removed.append(os.path.join(problem_dir, sub))
             elif user_id in config.ignore_userid:
@@ -235,7 +224,7 @@ def process(file, config):
         print("Moss userid is needed.")
         return
 
-    contest_id = os.path.basename(file[:-4])
+    contest_id = util.get_contest_id(file)
     contest_title = get_contest_title(contest_id) or contest_id
 
     base_dir = os.path.join(os.path.dirname(file), contest_title)
