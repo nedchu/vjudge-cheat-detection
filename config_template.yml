@@ -10,3 +10,13 @@ include_userid: []
 ignore_userid: ["123_456", Mottox, wotok]
 # use true and false
 remove_duplicate: true
+
+# semester info
+semester: {
+  # name of semester
+  name: "Contest Name",
+  # student information path(relative to config file path)
+  stu_info_path: "stu.txt",
+  # zip file paths of all contests in the semester(relative to config file path)
+  all_contests: ["256823.zip", "260682.zip", "262867.zip", "265008.zip"]
+}
