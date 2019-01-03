@@ -14,7 +14,7 @@
 - 辅助功能：根据题目编号的百度搜索结果获得博客中的源码
 - 辅助功能：题数汇总统计
 
-## 使用方式
+## 主程序：作弊检测
 
 ### 安装
 确认使用 Python3 环境，本地获取之后，使用 requirements.txt 进行安装，运行 `pip install -r requirements.txt`
@@ -51,21 +51,6 @@ vjudge 比赛的拥有者能够在 Setting 中导出所有的提交文件打包�
 | -m   | `int`             | Moss 参数，代码片出现多少次后被判定为基文件内容，默认为10                                       |
 | -n   | `int`             | Moss 参数，报告中最多呈现多少条匹配报告，默认为250，该值较大时下载报告需要较多时间              |
 
-### 配置文件
-长期无需改变的参数可以保存于 YAML 配置文件中供程序使用，优先使用命令行参数，其次使用配置文件。
-
-配置文件模板为 `./config_template.yml` 请自行修改使用。
-
-| 变量             | 变量类型      | 对应参数 |
-| ---------------- | ------------- | -------- |
-| language         | `list<str>`   | -l       |
-| remove_duplicate | `bool`        | -r       |
-| ignore_userid    | `list<str>`   | -iu      |
-| include_userid   | `list<regex>` | -u       |
-| moss_userid      | `str`         | -id      |
-| maximal_match    | `int`         | -m       |
-| report_num       | `int`         | -n       |
-
 ## 辅助工具：爬取网络代码
 对于从网络中抄袭源码的行为，提供了 `source_crawler.py` 辅助进行检测。
 
@@ -81,7 +66,7 @@ vjudge 比赛的拥有者能够在 Setting 中导出所有的提交文件打包�
 | -ip  | `list<str>`       | 需要忽略的问题ID                                    |
 | -n   | `int`             | 对于题号的搜索结果，在百度中取用前多少页            |
 
-## 辅助工具：通过统计
+## 辅助工具：题数汇总统计
 通过 `summarize.py` 能够根据本地的代码进行总通过题数等的统计。具体来说，是指定学生信息和所有比赛的 zip 文件名后，扫描对应文件夹下的 `submissions` 目录，统计每个学生的通过信息。
 
 由于统计信息所需的参数较多且通常不会变化，所以所有参数都保存于配置文件之中。
@@ -92,8 +77,20 @@ vjudge 比赛的拥有者能够在 Setting 中导出所有的提交文件打包�
 
 输出文件包含了一个给定的名字以及日期后缀，输出 xlsx 的标题也是给定的名字。
 
-| 变量                   | 变量类型     | 描述                                    |
-| ---------------------- | ------------ | --------------------------------------- |
-| semester.name          | `str`        | 学期汇总信息的名字                      |
-| semester.stu_info_path | `path`       | 学生信息文件相对于配置文件的目录        |
-| semester.all_contests  | `list<path>` | 所有比赛的 zip 文件相对于配置文件的目录 |
+## 配置文件
+长期无需改变的参数可以保存于 YAML 配置文件中供程序使用，优先使用命令行参数，其次使用配置文件。
+
+配置文件模板为 `./config_template.yml` 请自行修改使用。
+
+| 变量                   | 变量类型      | 描述                                    |
+| ---------------------- | ------------- | --------------------------------------- |
+| language               | `list<str>`   | 主程序参数 -l                           |
+| remove_duplicate       | `bool`        | 主程序参数 -r                           |
+| ignore_userid          | `list<str>`   | 主程序参数 -iu                          |
+| include_userid         | `list<regex>` | 主程序参数 -u                           |
+| moss_userid            | `str`         | 主程序参数 -id                          |
+| maximal_match          | `int`         | 主程序参数 -m                           |
+| report_num             | `int`         | 主程序参数 -n                           |
+| semester.name          | `str`         | 学期汇总信息的名字                      |
+| semester.stu_info_path | `path`        | 学生信息文件相对于配置文件的目录        |
+| semester.all_contests  | `list<path>`  | 所有比赛的 zip 文件相对于配置文件的目录 |
